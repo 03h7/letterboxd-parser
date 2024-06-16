@@ -1,0 +1,22 @@
+{
+  "name": "bun_letterbox-parser",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "puppeteer": "^22.11.0"
+  }
+}
