@@ -1,16 +1,6 @@
-// import express from 'express'
-// import { json } from 'body-parser'
-// import cors from 'cors'
-// import compression from 'compression'
 import { launch } from 'puppeteer'
 
-// const app = express()
-// const port = 5555
 const LOG_PATH = 'log.txt'
-
-// app.use(compression())
-// app.use(json())
-// app.use(cors())
 
 const CORS_HEADERS = {
     headers: {
@@ -76,14 +66,14 @@ const server = Bun.serve({
                 const lastPageNumber = await page.evaluate(() => {
                     let lastChildren
                     const paginationList = document.getElementsByClassName('paginate-pages').item(0)?.children.item(0)?.children
-                    
+
                     if(paginationList) lastChildren = paginationList[paginationList?.length - 1]
                     return lastChildren ? Number(lastChildren.textContent) : 2
                 })
 
                 for (let i = 2; i <= lastPageNumber; i++) {
                     await page.goto(`https://letterboxd.com/${user}/films/page/${i}`, {waitUntil: 'networkidle0'})
-                    
+
                     const otherPagesmoviesList = await page.evaluate(() => {
                         const otherMoviesList = document.getElementsByClassName('poster-list').item(1)
                         return otherMoviesList ? otherMoviesList.textContent?.trim() : null
@@ -99,7 +89,7 @@ const server = Bun.serve({
                 log(`\n${new Date()} ${req.method} ${req.url} ERROR: \n ${error} \n END OF ERROR\n`)
                 return new Response('Internal Server Error', { status: 500, ...CORS_HEADERS })
             }
-            
+
             log(`${new Date()} ${req.method} ${req.url} ${user} SUCCESS\n`)
             return Response.json(allParsedMovies, { status: 200, ...CORS_HEADERS })
         }
@@ -110,64 +100,3 @@ const server = Bun.serve({
 })
 
 console.log(`LWMP is online on port: ${server.port}`)
-
-// app.post('/letterbox', async (req, res) => {
-//     let hasMoreFilms = true
-//     let i = 2
-//     let user = ""
-//     let allParsedMovies = []
-
-//     if(req.body.user) { 
-//         user = req.body.user
-//     } else {
-//         res.status(400).send('User parameter is required')
-//         log(`${new Date()} ${req.method} ${req.url} MISSING USER IN BODY\n`)
-//     }
-
-//     const browser = await launch({ headless: true })
-//     const page = await browser.newPage()
-
-//     await page.goto(`https://letterboxd.com/${user}/films`, {waitUntil: 'networkidle0'})
-
-//     try {
-//         const mainPageMoviesList = await page.evaluate(() => {
-//             const moviesList = document.getElementsByClassName('poster-list').item(1)
-//             return moviesList ? moviesList.textContent?.trim() : null
-//         })
-
-//         if(mainPageMoviesList) allParsedMovies.push(mainPageMoviesList)
-
-//         const lastPageNumber = await page.evaluate(() => {
-//             let lastChildren
-//             const paginationList = document.getElementsByClassName('paginate-pages').item(0)?.children.item(0)?.children
-            
-//             if(paginationList) lastChildren = paginationList[paginationList?.length - 1]
-//             return lastChildren ? Number(lastChildren.textContent) : 2
-//         })
-
-//         for (let i = 2; i <= lastPageNumber; i++) {
-//             await page.goto(`https://letterboxd.com/${user}/films/page/${i}`, {waitUntil: 'networkidle0'})
-            
-//             const otherPagesmoviesList = await page.evaluate(() => {
-//                 const otherMoviesList = document.getElementsByClassName('poster-list').item(1)
-//                 return otherMoviesList ? otherMoviesList.textContent?.trim() : null
-//             })
-
-//             if(otherPagesmoviesList) {
-//                 allParsedMovies.push(otherPagesmoviesList)
-//             } 
-//         }
-
-//         await browser.close()
-//     } catch (error) {
-//         log(`\n${new Date()} ${req.method} ${req.url} ERROR: \n ${error} \n END OF ERROR\n`)
-//         res.status(500).send('Internal Server Error')
-//     }
-    
-//     log(`${new Date()} ${req.method} ${req.url} SUCCESS\n`)
-//     res.json(allParsedMovies)
-// })
-
-// app.listen(port, () => {
-//   console.log(`LWMP is online on port: ${port}`)
-// })
