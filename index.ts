@@ -2,11 +2,18 @@ import { launch } from 'puppeteer'
 
 const LOG_PATH = 'log.txt'
 
-const CORS_HEADERS = {
+const CORS_HEADERS_PREFLIGHT = {
     headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'OPTIONS, POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type',
+    },
+};
+
+const CORS_HEADERS = {
+    headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
     },
 };
 
@@ -23,18 +30,18 @@ const server = Bun.serve({
     async fetch(req) {
 
         if (req.method === 'OPTIONS') {
-            const res = new Response('Departed', CORS_HEADERS);
+            const res = new Response('how does this shit work', CORS_HEADERS_PREFLIGHT);
             return res;
         }
 
         const path = new URL(req.url).pathname
 
-        if(req.method==='POST' && path === '/letterbox') {
+        if (req.method === 'POST' && path === '/letterbox') {
             let user = ""
             let allParsedMovies = []
             let body = await req.json()
 
-            if(body) { 
+            if (body) {
                 user = body.user
             } else {
                 log(`${new Date()} ${req.method} ${req.url} MISSING USER IN BODY\n`)
@@ -44,15 +51,15 @@ const server = Bun.serve({
             const browser = await launch({ headless: true })
             const page = await browser.newPage()
 
-            await page.goto(`https://letterboxd.com/${user}/films`, {waitUntil: 'networkidle0'})
+            await page.goto(`https://letterboxd.com/${user}/films`, { waitUntil: 'networkidle0' })
 
             const doesUserExist = await page.evaluate(() => {
                 const isError = document.getElementsByClassName('error').item(0)
                 return true ? isError === null : false
             })
 
-            if(!doesUserExist) {
-                return Response.json('User does not exist', {status: 404, ...CORS_HEADERS })
+            if (!doesUserExist) {
+                return Response.json('User does not exist', { status: 404, ...CORS_HEADERS })
             }
 
             try {
@@ -61,27 +68,27 @@ const server = Bun.serve({
                     return moviesList ? moviesList.textContent?.trim() : null
                 })
 
-                if(mainPageMoviesList) allParsedMovies.push(mainPageMoviesList)
+                if (mainPageMoviesList) allParsedMovies.push(mainPageMoviesList)
 
                 const lastPageNumber = await page.evaluate(() => {
                     let lastChildren
                     const paginationList = document.getElementsByClassName('paginate-pages').item(0)?.children.item(0)?.children
 
-                    if(paginationList) lastChildren = paginationList[paginationList?.length - 1]
+                    if (paginationList) lastChildren = paginationList[paginationList?.length - 1]
                     return lastChildren ? Number(lastChildren.textContent) : 2
                 })
 
                 for (let i = 2; i <= lastPageNumber; i++) {
-                    await page.goto(`https://letterboxd.com/${user}/films/page/${i}`, {waitUntil: 'networkidle0'})
+                    await page.goto(`https://letterboxd.com/${user}/films/page/${i}`, { waitUntil: 'networkidle0' })
 
                     const otherPagesmoviesList = await page.evaluate(() => {
                         const otherMoviesList = document.getElementsByClassName('poster-list').item(1)
                         return otherMoviesList ? otherMoviesList.textContent?.trim() : null
                     })
 
-                    if(otherPagesmoviesList) {
+                    if (otherPagesmoviesList) {
                         allParsedMovies.push(otherPagesmoviesList)
-                    } 
+                    }
                 }
 
                 await browser.close()
