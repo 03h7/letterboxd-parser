@@ -106,4 +106,4 @@ const server = Bun.serve({
     port: 5555,
 })
 
-console.log(`LWMP is online on port: ${server.port}`)
+console.log(`Running on port: ${server.port}`)

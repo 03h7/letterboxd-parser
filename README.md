@@ -1,15 +1,14 @@
-# bun_letterbox-parser
+Letterboxd scraper written with Bun native API using puppeteer
 
-To install dependencies:
+Request to endpoint returns a fat block of text containing the name and year of release of all watched movies surrounded with white spaces and tabs, parse it however you want  
 
-```bash
-bun install
+#
+
+Install dependencies
 ```
-
-To run:
-
-```bash
-bun run index.ts
+bun i
 ```
-
-This project was created using `bun init` in bun v1.1.13. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Run it (port 5555 by default)
+```
+bun run dev
+```
